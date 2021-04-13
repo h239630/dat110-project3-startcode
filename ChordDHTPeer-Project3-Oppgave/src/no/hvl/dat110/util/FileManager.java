@@ -15,12 +15,12 @@ import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 
 import no.hvl.dat110.middleware.Message;
 import no.hvl.dat110.rpc.interfaces.NodeInterface;
-import no.hvl.dat110.util.Hash;
 
 public class FileManager {
 	
@@ -80,27 +80,47 @@ public class FileManager {
      * @param bytesOfFile
      * @throws RemoteException 
      */
-    public int distributeReplicastoPeers() throws RemoteException {
-    	int counter = 0;
-    	
-    	// Task1: Given a filename, make replicas and distribute them to all active peers such that: pred < replica <= peer
-    	
-    	// Task2: assign a replica as the primary for this file. Hint, see the slide (project 3) on Canvas
-    	
-    	// create replicas of the filename
-    	
-		// iterate over the replicas
-    	
-    	// for each replica, find its successor by performing findSuccessor(replica)
-    	
-    	// call the addKey on the successor and add the replica
-    	
-    	// call the saveFileContent() on the successor
-    	
-    	// increment counter
-    	
-    		
-		return counter;
+	public int distributeReplicastoPeers() throws RemoteException {
+        int counter = 0;
+
+        // Task1: Given a filename, make replicas and distribute them to all active peers such that: pred < replica <= peer
+
+        // Task2: assign a replica as the primary for this file. Hint, see the slide (project 3) on Canvas
+
+        // create replicas of the filename
+
+        // iterate over the replicas
+
+        // for each replica, find its successor by performing findSuccessor(replica)
+
+        // call the addKey on the successor and add the replica
+
+        // call the saveFileContent() on the successor
+
+        // increment counter
+        Random rnd= new Random();
+        int index= rnd.nextInt(Util.numReplicas-1);
+
+        createReplicaFiles();
+
+        NodeInterface succ;
+
+        for (int i = 0; i < replicafiles.length; i++) {
+
+            succ = chordnode.findSuccessor(replicafiles[i]);
+            succ.addKey(replicafiles[i]);
+
+            if (i == index) {
+                succ.saveFileContent(filename, hash, bytesOfFile, true);
+            } else {
+                succ.saveFileContent(filename, hash, bytesOfFile, false);
+            }
+
+            counter++;
+        }
+
+
+        return counter;
     }
 	
 	/**
@@ -125,9 +145,16 @@ public class FileManager {
 		
 		// save the metadata in the set succinfo.
 		
-		this.activeNodesforFile = succinfo;
+		createReplicaFiles();
+        NodeInterface s;
+        for(int i = 0; i < replicafiles.length; i++) {
+            s = chordnode.findSuccessor(replicafiles[i]);
+            succinfo = new HashSet<Message> (s.getFilesMetadata().values());
+        }
+        this.activeNodesforFile = succinfo;
+
+        return succinfo;
 		
-		return succinfo;
 	}
 	
 	/**
@@ -145,6 +172,21 @@ public class FileManager {
 		// use the primaryServer boolean variable contained in the Message class to check if it is the primary or not
 		
 		// return the primary
+		
+		try {
+            Set<Message> activePeers = requestActiveNodesForFile(filename);
+            Iterator<Message> itr = activePeers.iterator();
+
+            while (itr.hasNext()) {
+                if (itr.next().isPrimaryServer()) {
+                    //return itr.next().;
+                }
+            }
+
+
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
 		
 		return null; 
 	}
