@@ -41,9 +41,45 @@ public class Util {
 		// a formula to check whether an id falls within the set {lower, upper} using the address size as our bound (modulos operation)
 		// it modifies 'upper' and 'id' when lower > upper e.g. set (6, 2) in mod 10 = {6, 7, 8, 9, 0, 1, 2}
 		
-		// implement: read the descriptions above
+		// implement: (lower <= id <= upper)
 		boolean cond = false;
-
+		BigInteger modifier = Hash.addressSize();
+		BigInteger idMod = id.add(modifier);
+		BigInteger upperMod = upper.add(modifier);
+		
+		if (lower.compareTo(upper) >= 0) {
+			// Lower is greater than upper limit so have to adjust with the modulo. 
+			
+			if (id.compareTo(lower) > 0) {
+				
+//				if (lower.compareTo(id) <= 0 && id.compareTo(upperMod) <= 0) {
+//					cond = true;
+//				}
+				
+				if (lower.compareTo(id) <= 0) {
+					if (id.compareTo(upperMod) <= 0) {
+						cond = true;
+					}
+				}
+				
+			} else {
+//				if (lower.compareTo(idMod) <= 0 && id.compareTo(upper) <= 0) {
+//					cond = true;
+//				}
+				if (lower.compareTo(idMod) <= 0) {
+					if (id.compareTo(upperMod) <= 0) {
+						cond = true;
+					}
+				}
+			}
+			
+		} else { 
+			if (id.compareTo(lower) >= 0) {
+				if (id.compareTo(upper) <= 0) {
+					cond = true;
+				}
+			}
+		}
 		
 		return cond;
 	}
