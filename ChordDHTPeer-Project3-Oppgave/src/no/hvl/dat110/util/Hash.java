@@ -53,9 +53,8 @@ public class Hash {
 		
 		// return the address size
 		
-		BigInteger two = BigInteger.valueOf(2);
 		
-		BigInteger addressSize = two.pow(bitSize());
+		BigInteger addressSize = BigInteger.TWO.pow(bitSize());
 		
 		return addressSize;
 	}
@@ -63,8 +62,14 @@ public class Hash {
 	public static int bitSize() {
 		
 		// find the digest length
-		// digest length is the length of the digest byte array which is 16
-		int digestlen = 16;
+		int digestlen = 0;
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			digestlen = md.getDigestLength();
+			
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
 		
 		return digestlen*8;
 	}

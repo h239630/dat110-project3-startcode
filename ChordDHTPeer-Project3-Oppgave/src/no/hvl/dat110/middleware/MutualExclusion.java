@@ -58,7 +58,6 @@ public class MutualExclusion {
 		// adjust the clock on the message, by calling the setClock on the message
 				
 		// wants to access resource - set the appropriate lock variable
-	
 		
 		// start MutualExclusion algorithm
 		
@@ -76,7 +75,14 @@ public class MutualExclusion {
 		
 		// return permission
 		
+		queueack.clear();
+		mutexqueue.clear();
+		clock.increment();
+		message.setClock(clock.getClock());
+		WANTS_TO_ENTER_CS = true;
 		
+		removeDuplicatePeersBeforeVoting();
+		//multicastMessage(message);
 		return false;
 	}
 	
@@ -89,6 +95,10 @@ public class MutualExclusion {
 		
 		// call onMutexRequestReceived()
 		
+		for (Message m : activenodes) {
+			NodeInterface nodeStub = Util.getProcessStub(m.getNodeIP(), m.getPort());
+			nodeStub.onMutexRequestReceived(message);
+		}
 	}
 	
 	public void onMutexRequestReceived(Message message) throws RemoteException {
@@ -156,17 +166,23 @@ public class MutualExclusion {
 	public void onMutexAcknowledgementReceived(Message message) throws RemoteException {
 		
 		// add message to queueack
+		queueack.add(message);
 		
 	}
 	
 	// multicast release locks message to other processes including self
-	public void multicastReleaseLocks(Set<Message> activenodes) {
+	public void multicastReleaseLocks(Set<Message> activenodes) throws RemoteException {
 		
 		// iterate over the activenodes
 		
 		// obtain a stub for each node from the registry
 		
 		// call releaseLocks()
+		
+		for (Message m : activenodes) {
+			NodeInterface nodeStub = Util.getProcessStub(m.getNodeIP(), m.getPort());
+			nodeStub.releaseLocks();
+		}
 	
 	}
 	
@@ -176,8 +192,15 @@ public class MutualExclusion {
 		// clear the queueack
 		
 		// return true if yes and false if no
+		
+		boolean clear = false;
+		
+		if (queueack.size() == numvoters) {
+			clear = true; 
+		}
+		queueack.clear();
 
-		return false;
+		return clear;
 	}
 	
 	private List<Message> removeDuplicatePeersBeforeVoting() {
